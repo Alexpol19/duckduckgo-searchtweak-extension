@@ -1,8 +1,8 @@
 # DuckDuckGo Search extension
 
-## Extension for manage search results and search on the DuckDuckGo website
+### Extension for manage search results and search on the DuckDuckGo website
 
-### How to install
+## How to install
 To install this extension in developer mode you should follow next steps:
 1. Open the Google Chrome browser
 2. Go to the Extensions page by entering chrome://extensions in a new tab.
@@ -16,20 +16,20 @@ To install this extension in developer mode you should follow next steps:
 
 ![Enable extension](extension-toggle.png)
 
-### How to use
+## How to use
 1. Open the website [DuckDuckGo](https://duckduckgo.com/).
 2. Enter your search term in the search field.
 3. On the search results page, you should see search results with an additional button under each search result title item.
 4. When you click on that button, it will run the current search with the domain from the search result URL you wanted to see.
 
-### Examples of work
+## Examples of work
 ![Search results with extension button](render-extension-button.png)
 
 ![Modified search field after clicking on extension button](result-of-clicking-button.jpg)
 
-### How does this extension works
+## How does this extension works
 This extension includes a script in client page to enhance the functionality of the DuckDuckGo search results page by adding a "Search this site" button next to each search result. 
-##### Here's a brief explanation of how it works:
+#### Here's a brief explanation of how it works:
 
 1. Search Result Monitoring:
     - The script starts by defining variables to track the number of search results and sets up an interval to periodically check for changes in the search results.
@@ -46,6 +46,6 @@ This extension includes a script in client page to enhance the functionality of 
 
 In summary, this script dynamically adds functionality to the DuckDuckGo search results page, allowing users to easily refine their search queries to focus on specific domains directly from the search results.
 
-### Known Issues or limitations
+## Known Issues or limitations
 1. This extensions only functional on DuckDuckGo pages.
 2. Relies solely on current HTML elements; any changes to them or their IDs will break render the extension.
