@@ -1,44 +1,66 @@
-console.log("hello world");
+// find searched elements functionality
+let previousItemCount = 0;
+let checkInterval = 1000;
+let timeout = null;
+let moreResultsEventListenerAdded = false;
 
 function getResultsBlock() {
   return new Promise((resolve, reject) => {
-    const checkInterval = 1000;
-    const maxAttempts = 30;
-
-    let attempts = 0;
-
-    const checkExistence = () => {
-      const resultBlocks = document.getElementsByClassName("react-results--main");
-      if (resultBlocks.length > 0) {
-        resolve(resultBlocks[0]);
-      } else {
-        attempts++;
-        if (attempts >= maxAttempts) {
-          reject(new Error("Results block not found within the timeout period."));
-        } else {
-          setTimeout(checkExistence, checkInterval);
-        }
-      }
-    };
-
-    checkExistence();
+    const resultBlocks = document.getElementsByClassName("react-results--main");
+    if (resultBlocks.length > 0) {
+      resolve(resultBlocks[0]);
+    } else {
+      reject(new Error("Results block not found."));
+    }
   });
 }
 
-getResultsBlock()
-  .then(resultsBlock => {
-    const organicItems = resultsBlock.querySelectorAll('li[data-layout="organic"]');
-    organicItems.forEach(item => {
-      insertButton(item);
-    });
-  })
-  .catch(error => {
-    console.error(error.message);
-  });
+function waitForChanges() {
+  clearTimeout(timeout);
 
+  getResultsBlock()
+    .then(resultsBlock => {
+      const organicItems = resultsBlock.querySelectorAll('li[data-layout="organic"]');
+      const currentItemCount = organicItems.length;
+      if(!moreResultsEventListenerAdded) {
+        spyMoreResultsButton();
+      }
+      if (currentItemCount !== previousItemCount) {
+        if (checkInterval === 1000) {
+          checkInterval = 5000; // change the interval to a larger one to handle new elements appearing for an unknown reason
+        }
+        previousItemCount = currentItemCount;
+        organicItems.forEach(item => {
+          insertButton(item);
+        });
+      }
+      timeout = setTimeout(waitForChanges, checkInterval);
+    })
+    .catch(() => {
+      timeout = setTimeout(waitForChanges, checkInterval);
+    });
+}
+
+waitForChanges();
+
+// Handle waitForChange when clicking on More Results button
+function spyMoreResultsButton() {
+  const moreResultsButton = document.getElementById('more-results');
+  if (moreResultsButton) {
+    moreResultsEventListenerAdded = true;
+    moreResultsButton.addEventListener('click', function() {
+      clearTimeout(timeout);
+      checkInterval = 1000;
+      waitForChanges();
+    });
+  }
+}
+
+// Add button with functionality
 function createSearchButton() {
   const button = document.createElement('button');
   button.textContent = 'Search this site';
+  button.className = 'search-button';
   button.style.backgroundColor = 'blue';
   button.style.color = 'white';
   button.style.padding = '8px 16px';
@@ -51,18 +73,17 @@ function createSearchButton() {
 
 function insertButton(liElement) {
   const h2Element = liElement.querySelector('h2');
-  if (h2Element) {
-    const domainUrl = getDomainUrl(h2Element);
-    if (domainUrl) {
-      const button = createSearchButton();
-      button.addEventListener('click', function(event) {
-        event.stopPropagation(); // Prevent event bubbling
-        event.preventDefault(); // Prevent default button behavior
-        searchModifiedResult(domainUrl);
-      });
-      h2Element.parentNode.insertBefore(button, h2Element.nextSibling);
-    }
-  }
+  if(!h2Element) return null;
+  const existingButton = liElement.querySelector('.search-button');
+  const domainUrl = getDomainUrl(h2Element);
+  if(existingButton || !domainUrl) return null;
+  const button = createSearchButton();
+  button.addEventListener('click', function(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    searchModifiedResult(domainUrl);
+  });
+  h2Element.parentNode.insertBefore(button, h2Element.nextSibling);
 }
 
 function getDomainUrl(h2Element) {
